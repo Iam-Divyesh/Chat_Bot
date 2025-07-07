@@ -68,7 +68,7 @@ def prepare_embeddings():
     for url in website_urls:
         web_text += scrape_page(url) + "\n"
 
-    with pdfplumber.open("./assets/HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
+    with pdfplumber.open("./HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
         text = ''
         for page in pdf.pages:
             extracted_text = page.extract_text()
