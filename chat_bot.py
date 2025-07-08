@@ -132,7 +132,7 @@ if user_input:
         "'I'm sorry, I can only assist with questions specifically related to HeadsIn company.'\n"
         "If the question is about HeadsIn but you don’t have enough information, respond:\n"
         "'That’s a great question. Please contact our team at https://headsin.co/contact-us or email contact@headsin.co for the most accurate information.'\n"
-        "Always be polite, concise, and human-like in your answers. "
+        "Always be polite, concise, short and human-like in your answers. "
         "If asked about social media, you can share:\n"
         "- Instagram: https://www.instagram.com/headsin.co\n"
         "- Facebook: https://www.facebook.com/people/HeadsInco/61574907748702/\n"
