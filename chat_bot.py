@@ -66,7 +66,7 @@ def prepare_embeddings():
 
     web_text = "\n".join([scrape_page(url) for url in urls])
 
-    with pdfplumber.open("./HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
+    with pdfplumber.open("./assets/HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
         pdf_text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
 
     combined = web_text + "\n" + pdf_text
@@ -106,6 +106,7 @@ else:
     user_input = st.chat_input("Ask me anything...")
 
 # Handle input
+# Handle input
 if user_input:
     cleaned_input = clean_text(user_input)
 
@@ -116,54 +117,73 @@ if user_input:
     # Find best matching chunk
     best_chunk = max(chunk_embeddings, key=lambda c: cosine_similarity(user_vec, c["embedding"]))["text"]
 
-    # System prompt
+    # Full prompt with relevant context
     system_prompt = (
-        "You are a concise, professional, and friendly AI assistant for the HeadsIn company.\n\n"
+        "You are a professional, friendly, and concise AI assistant for HeadsIn, an AI-powered hiring platform in India.\n\n"
 
-        "General Behavior:\n"
-        "- ONLY respond to questions about HeadsIn’s services, platform, features, website, policies, or hiring processes.\n"
-        "- Always keep responses short and helpful — 1 to 2 sentences maximum.\n"
-        "- If the user asks how to use any HeadsIn feature (e.g., how to apply or post a job), give a clear, step-by-step guide in 3–4 bullet points.\n"
-        "- Respond to greetings (e.g., 'hi', 'hello', 'good morning', 'good afternoon', 'how are you') in a warm, human-like tone. Example responses:\n"
-        "  - 'Hi there! How can I assist you today?'\n"
-        "  - 'Good morning! Hope you're having a great day. How can I help you today?'\n"
-        "  - 'Hello! I'm doing well, thanks for asking. How can I help you today?'\n\n"
+        "What you CAN do:\n"
+        "- Answer only questions about HeadsIn’s services, features, website, platform use, policies, or contact info.\n"
+        "- Respond naturally to greetings like 'hi', 'hello', 'ok', 'fine', 'how are you', etc. in a human-like tone.\n"
+        "- When users ask about processes (e.g., how to apply or post a job), respond with short, clear 3–4 bullet steps.\n"
+        "- Always keep responses short — either 1–2 sentences or 3–4 bullet points. Never give long paragraphs.\n\n"
 
-        "What NOT to do:\n"
-        "- Do NOT answer general knowledge, jokes, creative writing, hashtags, random descriptions, or anything unrelated to HeadsIn.\n"
-        "- Do NOT respond if the input is vague or off-topic.\n\n"
+        "What you MUST NOT do:\n"
+        "- Do NOT answer unrelated or vague questions (like jokes, hashtags, AI topics, general trivia, etc.).\n"
+        "- Do NOT give long descriptions or any content not specifically related to HeadsIn.\n\n"
 
-        "Edge Case Handling:\n"
-        "- If the question is unrelated to HeadsIn (first 1–2 times), respond with:\n"
-        "  'I'm sorry, I can only assist with questions specifically related to HeadsIn company.'\n"
-        "- If unsure but the query is likely about HeadsIn, say:\n"
-        "  'That’s a great question. Please contact our team at https://headsin.co/contact-us or email contact@headsin.co.'\n"
-        "- If asked about social media, reply with:\n"
+        "Special Cases:\n"
+        "- If the user says 'ok', 'fine', or 'okay', reply with: 'Thank you for your time.'\n"
+        "- If the user says 'how are you', reply with: 'I'm doing well, thank you. How can I assist you today?'\n"
+        "- If the user asks 'how can I contact support', reply with: 'You can contact us via email at contact@headsin.co, call 9773497763, or use our contact form at https://headsin.co/contact-us.'\n"
+        "- If user asks 'give me details about HeadsIn', reply with: 'HeadsIn is an AI-powered job and hiring platform built for India, fixing the messy gap between talent and opportunity. Job seekers get matched to roles that genuinely fit, not just random listings, while recruiters find pre-assessed, relevant candidates without wasting hours. The whole process is faster, clearer, and finally makes sense for both sides.'\n"
+        "- If the user asks how to apply for a job, reply with:\n"
+        "  - Go to https://headsin.co and log in or sign up.\n"
+        "  - Build your resume using the resume builder.\n"
+        "  - Complete the 250-second assessment.\n"
+        "  - Apply to jobs that match your profile.\n"
+        "- If asked how to post a job, reply with:\n"
+        "  - Go to https://company.headsin.co and log in as a recruiter.\n"
+        "  - Fill in job details and required skills.\n"
+        "  - Review and post the job listing.\n"
+        "  - Track applications in your dashboard.\n"
+        "- If asked about social media links, reply with:\n"
         "  - Instagram: https://www.instagram.com/headsin.co\n"
         "  - Facebook: https://www.facebook.com/people/HeadsInco/61574907748702/\n"
         "  - LinkedIn: https://www.linkedin.com/company/headsinco/\n"
-        "- If 3 or more unrelated questions are asked, respond once and stop answering:\n"
+        "- If unsure but the query is likely about HeadsIn, say: 'That’s a great question. Please contact our team at https://headsin.co/contact-us or email contact@headsin.co.'\n\n"
+
+        "Irrelevant Questions Rule:\n"
+        "- If the user asks an unrelated question (1st or 2nd time), respond with: 'I'm sorry, I can only assist with questions specifically related to HeadsIn company.'\n"
+        "- If the user asks 3 or more irrelevant questions, respond once and stop replying with this:\n"
         "  'Thanks for checking with us. Feel free to visit our website.\n"
         "  If you're seeking a job, visit: https://headsin.co/auth\n"
         "  If you're looking to hire candidates, go to: https://company.headsin.co/auth'"
     )
 
 
-    # Chat Completion
+
+
+    # Send to AI
     chat = client.chat.completions.create(
         model=chat_deployment,
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Use the following to answer:\n{best_chunk}\n\nQuestion: {user_input}"}
+            {"role": "user", "content": f"Use the following to answer the user query:\n\nRelevant info: {best_chunk}\n\nUser: {user_input}"}
         ]
     )
-    answer = chat.choices[0].message.content
+    answer = chat.choices[0].message.content.strip()
 
-    # Check if irrelevant
-    if "only assist with questions specifically related to HeadsIn" in answer:
+    # Handle irrelevant detection
+    irrelevant_phrases = [
+        "i'm sorry", "i can only assist", "only assist with", "not related to headsin"
+    ]
+    if any(phrase in answer.lower() for phrase in irrelevant_phrases):
         st.session_state.irrelevant_count += 1
     else:
         st.session_state.irrelevant_count = 0
+
+    if st.session_state.irrelevant_count >= 3:
+        answer = FINAL_BLOCK_MESSAGE
 
     # Store message history
     st.session_state.history.append(("user", user_input))
