@@ -66,7 +66,7 @@ def prepare_embeddings():
 
     web_text = "\n".join([scrape_page(url) for url in urls])
 
-    with pdfplumber.open("./assets/HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
+    with pdfplumber.open("./HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
         pdf_text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
 
     combined = web_text + "\n" + pdf_text
