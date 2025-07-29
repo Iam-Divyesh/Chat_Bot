@@ -66,7 +66,7 @@ def prepare_embeddings():
 
     web_text = "\n".join([scrape_page(url) for url in urls])
 
-    with pdfplumber.open("./HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
+    with pdfplumber.open("./assets/HeadsIn_Public_Chatbot_Report_2025.pdf") as pdf:
         pdf_text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
 
     combined = web_text + "\n" + pdf_text
@@ -139,6 +139,7 @@ if user_input:
         "Special Instructions:\n"
         "- If a user asks about support, reply: 'You can contact our team via email at info@headsin.co, call 9773497763, or use our contact form at https://headsin.co/contact-us.'\n"
         "- If a user asks 'What is HeadsIn?', reply: 'HeadsIn is an AI-powered job and hiring platform that helps candidates get matched with relevant jobs and enables recruiters to find pre-assessed talent quickly and efficiently.'\n"
+        "- If a user asks for in how many days i will get job, reply: It depends on your profile and the Company's requirement.\n "
         "- If a user asks how to apply for a job, reply:\n"
         "  - Visit https://headsin.co and log in or sign up.\n"
         "  - Build your resume using our AI-powered resume builder.\n"
@@ -166,8 +167,6 @@ if user_input:
         "   Call : +91 9773497763"
         "   Email : info@headsin.co"
     )
-
-
 
 
     # Send to AI
